@@ -1,0 +1,13 @@
+# Variáveis de ambiente e chaves de API
+.env
+
+# Cache do Python
+__pycache__/
+*.pyc
+*.pyo
+
+# Gradio
+.gradio/
+
+# VS Code
+.vscode/
