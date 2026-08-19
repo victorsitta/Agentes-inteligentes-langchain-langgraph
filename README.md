@@ -14,7 +14,7 @@
 
 <br/>
 
-> **Projeto de estudo** construído durante o Alura Tech Builder — do zero até um sistema multi-agente com interface visual, buscas em tempo real na web e em artigos científicos.
+> Projeto de estudo construído durante o **Alura Tech Builder** — do zero até um sistema multi-agente com interface visual, buscas em tempo real na web e em artigos científicos.
 
 </div>
 
@@ -32,19 +32,24 @@ Um sistema de **agentes de inteligência artificial** que combina:
 
 ---
 
-## 🏗️ Arquitetura do projeto
+## 🏗️ Estrutura do projeto
 
 ```
-📦 APRENDENDO - Criar Agente LLM
-├── 🔧 TavilyBusca.py         → Ferramenta de busca na web
-├── 🔬 arxiv_tool.py           → Ferramenta de busca científica
-├── 🤖 agente_react.py         → Agente único com as duas ferramentas
-├── 🔀 usando_varios_agentes.py → Pipeline com 3 agentes em sequência
-├── 👑 supervisor.py            → Supervisor inteligente multi-agente
-├── 🖥️  Vizualizacao.py         → Interface Gradio
-├── 🧪 main.py                  → Teste inicial com Gemini
-├── 🔐 .env                     → Chaves de API (não enviado ao GitHub)
-└── 📁 outputs/
+📦 projeto/
+├── 🚀 app.py                      → ponto de entrada — interface Gradio
+├── 📋 requirements.txt            → dependências do projeto
+├── 🔐 .env.example                → modelo do arquivo de configuração
+│
+├── 📁 tools/                      → ferramentas disponíveis para os agentes
+│   ├── tavily_tool.py             → busca_web (Tavily — requer API key)
+│   └── arxiv_tool.py              → busca_arxiv (ArXiv — gratuito)
+│
+├── 📁 agents/                     → agentes e pipelines
+│   ├── single_agent.py            → agente único com as duas ferramentas
+│   ├── multi_agent.py             → pipeline sequencial fixo
+│   └── supervisor.py              → supervisor com fluxo dinâmico
+│
+└── 📁 outputs/                    → exemplos de respostas geradas
     └── agricultura/
         └── impactos_ia_agricultura.md
 ```
@@ -62,22 +67,21 @@ Um sistema de **agentes de inteligência artificial** que combina:
                         │
                         ▼
               ┌─────────────────┐
-              │    SUPERVISOR   │ ← cérebro central
+              │    SUPERVISOR   │  ← cérebro central
               └────────┬────────┘
-                       │ decide
+                       │ decide dinamicamente
           ┌────────────┼────────────┐
-          ▼            ▼            ▼
-   ┌─────────────┐           ┌─────────────────┐
-   │  AGENTE WEB │           │ AGENTE CIENTÍFICO│
-   │   (Tavily)  │           │    (ArXiv)       │
-   └──────┬──────┘           └────────┬─────────┘
-          │                           │
-          └───────────┬───────────────┘
+          ▼                         ▼
+   ┌─────────────┐         ┌─────────────────┐
+   │  AGENTE WEB │         │ AGENTE CIENTÍFICO│
+   │   (Tavily)  │         │    (ArXiv)       │
+   └──────┬──────┘         └────────┬─────────┘
+          │                         │
+          └───────────┬─────────────┘
                       ▼
              ┌────────────────┐
-             │  CONSOLIDADOR  │ ← une as respostas
+             │  CONSOLIDADOR  │  ← une as respostas
              └───────┬────────┘
-                     │
                      ▼
              ┌───────────────┐
              │ RESPOSTA FINAL│
@@ -86,43 +90,19 @@ Um sistema de **agentes de inteligência artificial** que combina:
 
 ---
 
-## 🛠️ Ferramentas criadas
+## 🛠️ Ferramentas
 
-### 🌐 `busca_web` — TavilyBusca.py
+### 🌐 `busca_web` — `tools/tavily_tool.py`
 
-Busca informações atualizadas na internet usando a API do Tavily.
-
-```python
-@tool
-def busca_web(query: str) -> list:
-    """Busca na web por um termo específico."""
-    tavily_search = TavilySearch(max_results=2, search_depth="advanced")
-    return tavily_search.invoke(query)
-```
-
-| Propriedade | Detalhe |
+| | |
 |---|---|
 | API necessária | ✅ Sim — [tavily.com](https://tavily.com) |
-| Variável no .env | `TAVILY_API_KEY` |
+| Variável | `TAVILY_API_KEY` |
 | Retorna | Título, URL e conteúdo das páginas |
 
----
+### 🔬 `busca_arxiv` — `tools/arxiv_tool.py`
 
-### 🔬 `busca_arxiv` — arxiv_tool.py
-
-Busca artigos científicos diretamente no repositório ArXiv.
-
-```python
-@tool
-def busca_arxiv(query: str) -> str:
-    """Busca artigos científicos no ArXiv."""
-    client = arxiv.Client()
-    search = arxiv.Search(query=query, max_results=3)
-    for paper in client.results(search):
-        # retorna título, autores, resumo e link
-```
-
-| Propriedade | Detalhe |
+| | |
 |---|---|
 | API necessária | ❌ Não — totalmente gratuito |
 | Mantido por | Cornell University |
@@ -132,39 +112,22 @@ def busca_arxiv(query: str) -> str:
 
 ## 🎭 Os agentes
 
-| Arquivo | Tipo | Ferramentas | Descrição |
-|---|---|---|---|
-| `main.py` | Cadeia simples | Nenhuma | Primeira versão — só Gemini com prompt |
-| `agente_react.py` | Agente ReAct | Tavily + ArXiv | Agente único com duas ferramentas |
-| `usando_varios_agentes.py` | Multi-agente fixo | Tavily + ArXiv | Fluxo sequencial fixo com consolidador |
-| `supervisor.py` | Multi-agente dinâmico | Tavily + ArXiv | Supervisor decide o fluxo em tempo real |
+| Arquivo | Tipo | Descrição |
+|---|---|---|
+| `agents/single_agent.py` | Agente único | Gemini com Tavily + ArXiv, decide sozinho qual usar |
+| `agents/multi_agent.py` | Pipeline fixo | Fluxo sequencial: web → científico → consolida |
+| `agents/supervisor.py` | Supervisor dinâmico | Supervisor decide o fluxo em tempo real |
 
 ---
 
-## 👑 Supervisor vs Pipeline fixo
+## 👑 Pipeline fixo vs Supervisor
 
 | | Pipeline fixo | Supervisor |
 |---|---|---|
 | Fluxo | Sempre igual | Dinâmico |
-| Decisão | Você | O LLM |
-| Eficiência | Executa tudo | Só o necessário |
+| Quem decide | Você (no código) | O LLM |
+| Eficiência | Executa tudo sempre | Só o necessário |
 | Complexidade | Simples | Avançado |
-
----
-
-## 🖥️ Interface visual
-
-O `Vizualizacao.py` conecta o supervisor a uma interface web usando Gradio:
-
-```python
-iface = gr.Interface(
-    fn=run_graph,
-    inputs=gr.Textbox(label="Digite sua pergunta:"),
-    outputs=gr.Markdown(label="Resposta Final:"),
-    title="Agente de Pesquisa com LangGraph"
-)
-iface.launch()  # abre em http://localhost:7860
-```
 
 ---
 
@@ -173,14 +136,20 @@ iface.launch()  # abre em http://localhost:7860
 ### 1. Clone o repositório
 ```bash
 git clone https://github.com/victorsitta/SALVAR-CRIANDO-FERRAMENTAS-E-A-GENTE-PARA-MIM-LANGCHAIN-E-LANGGRAPH.git
+cd SALVAR-CRIANDO-FERRAMENTAS-E-A-GENTE-PARA-MIM-LANGCHAIN-E-LANGGRAPH
 ```
 
 ### 2. Instale as dependências
 ```bash
-pip install langchain langchain-google-genai langchain-tavily arxiv python-dotenv gradio langgraph
+pip install -r requirements.txt
 ```
 
 ### 3. Configure o `.env`
+```bash
+cp .env.example .env
+# edite o .env com suas chaves de API
+```
+
 ```env
 GOOGLE_API_KEY=sua_chave_aqui
 GEMINI_API_KEY=sua_chave_aqui
@@ -191,47 +160,50 @@ TAVILY_API_KEY=sua_chave_aqui
 
 ```bash
 # Interface visual (recomendado)
-python Vizualizacao.py
+python app.py
 
 # Supervisor no terminal
-python supervisor.py
+python agents/supervisor.py
+
+# Pipeline multi-agente fixo
+python agents/multi_agent.py
 
 # Agente único
-python agente_react.py
+python agents/single_agent.py
 
-# Testar ferramenta ArXiv
-python arxiv_tool.py
-
-# Testar ferramenta Tavily
-python TavilyBusca.py
+# Testar ferramentas isoladas
+python tools/tavily_tool.py
+python tools/arxiv_tool.py
 ```
 
 ---
 
 ## 📚 Conceitos aprendidos
 
-```
-LLM          → o cérebro (Gemini)
-Ferramenta   → capacidade extra que o LLM pode usar
-Agente       → LLM + ferramentas + autonomia de decisão
-Grafo        → fluxo de execução entre agentes
-Supervisor   → agente central que orquestra os outros
-Estado       → memória compartilhada entre os agentes
-```
+| Conceito | Descrição |
+|---|---|
+| **LLM** | O cérebro — modelo de linguagem (Gemini) |
+| **Ferramenta** | Capacidade extra que o LLM pode acionar |
+| **Agente** | LLM + ferramentas + autonomia de decisão |
+| **Grafo** | Fluxo de execução entre agentes (LangGraph) |
+| **Estado** | Memória compartilhada entre os nós do grafo |
+| **Supervisor** | Agente central que orquestra os outros |
 
 ---
 
-## ⚠️ Problema encontrado no caminho
+## ⚠️ Problema resolvido no caminho
 
-O `langchain-community` estava sendo usado para o ArXiv mas quebrou por incompatibilidade com versões novas do pacote `arxiv`:
+O `langchain-community` quebrou ao usar `ArxivQueryRun`:
 
 ```
 AttributeError: 'Search' object has no attribute 'results'
 ```
 
-**Solução:** abandonar o `langchain-community` e usar o pacote `arxiv` diretamente com `Client().results(search)`.
+**Causa:** incompatibilidade entre `langchain-community` e a versão nova do pacote `arxiv`.
 
-> Lição: sempre verificar se existe um pacote standalone mais atualizado antes de usar `langchain-community`.
+**Solução:** usar o pacote `arxiv` diretamente com `Client().results(search)` e criar a ferramenta manualmente com `@tool`.
+
+> Lição: verificar sempre se existe um pacote standalone antes de usar `langchain-community`.
 
 ---
 
