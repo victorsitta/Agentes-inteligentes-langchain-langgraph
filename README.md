@@ -49,6 +49,15 @@ Um sistema de **agentes de inteligência artificial** que combina:
 │   ├── multi_agent.py             → pipeline sequencial fixo
 │   └── supervisor.py              → supervisor com fluxo dinâmico
 │
+├── 📁 estudos/                    → arquivos usados durante o aprendizado
+│   ├── main.py                    → primeira versão — só Gemini com prompt
+│   ├── TavilyBusca.py             → teste isolado da ferramenta Tavily
+│   ├── arxiv_tool.py              → teste isolado da ferramenta ArXiv
+│   ├── agente_react.py            → agente único (versão de estudo)
+│   ├── usando_varios_agentes.py   → multi-agente sequencial (versão de estudo)
+│   ├── supervisor.py              → supervisor (versão de estudo)
+│   └── Vizualizacao.py            → interface Gradio (versão de estudo)
+│
 └── 📁 outputs/                    → exemplos de respostas geradas
     └── agricultura/
         └── impactos_ia_agricultura.md
